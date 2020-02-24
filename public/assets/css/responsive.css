@@ -1,0 +1,133 @@
+/*wide screen*/
+@media only screen and (min-width: 1200px) {
+    .slicknav_menu {
+        display: none;
+    }
+}
+
+/*medium screen*/
+@media only screen and (min-width: 992px) and (max-width: 1199px) {
+    .slicknav_menu {
+        display: none;
+    }
+
+/*Tablet screen*/
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+    .slicknav_menu {
+        display: block;
+        font-size: 30px;
+        background: transparent;
+        padding: 0;
+    }
+
+    header .main_menu {
+        display: none !important;
+    }
+
+    .sticky {
+        display: none;
+    }
+
+    #mobilenav {
+        position: absolute;
+        right: 20px;
+        top: 14px;
+        z-index: 9;
+        width: 50%;
+    }
+
+    .slicknav_btn {
+        background-color: transparent;
+    }
+
+    .slicknav_nav {
+        font-size: 16px;
+        background-color: #606060;
+        text-align: right;
+    }
+
+
+}
+
+
+/*Mobile screen*/
+@media only screen and (min-width: 0px) and (max-width: 767px) {
+    .slicknav_menu {
+        display: block;
+        font-size: 30px;
+        background: transparent;
+        padding: 0;
+    }
+
+    header .main_menu {
+        display: none;
+    }
+
+    .sticky {
+        display: none;
+    }
+
+    #mobilenav {
+        position: absolute;
+        right: 20px;
+        top: 14px;
+        z-index: 9;
+        width: 50%;
+    }
+
+    .slicknav_btn {
+        background-color: transparent;
+    }
+
+    .slicknav_nav {
+        font-size: 16px;
+        background-color: #606060;
+        text-align: right;
+    }
+
+    
+	.wrapper_off_right {
+		margin-top: 50px;
+	}
+}
+
+
+/*Wide Mobile screen*/
+@media only screen and (min-width: 480px) and (max-width: 767px) {
+    .slicknav_menu {
+        display: block;
+        font-size: 30px;
+        background: transparent;
+        padding: 0;
+    }
+
+    header .main_menu {
+        display: none;
+    }
+
+    .sticky {
+        display: none;
+    }
+
+    #mobilenav {
+        position: absolute;
+        right: 20px;
+        top: 14px;
+        z-index: 9;
+        width: 50%;
+    }
+
+    .slicknav_btn {
+        background-color: transparent;
+    }
+
+    .slicknav_nav {
+        font-size: 16px;
+        background-color: #606060;
+        text-align: right;
+    }
+	
+	.wrapper_off_right {
+		margin-top: 50px;
+	}
+}
