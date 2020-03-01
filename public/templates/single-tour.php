@@ -116,8 +116,8 @@ the_post();
                                             <h4>Type your tour date</h4>
                                             <div class="form-group">
                                                 <div class="input-group date">
-                                                    <input value="MM/DD/YY" type="text"
-                                                           name="tour_start_date" id="datepicker">
+                                                    <input type="text" name="tour_start_date" id="datepicker"
+                                                    autocomplete="off" placeholder="Select your flexible date">
                                                 </div>
                                             </div>
                                         </div>
@@ -137,8 +137,7 @@ the_post();
                                 </div>
                             </div>
                         </form>
-
-
+                        
                     </div>
                 </div>
             </div>
@@ -148,8 +147,8 @@ the_post();
 
 
     <!--Start Blog section-->
-<?php do_action( 'related_tour_section' ); ?>
+
+    <?php do_action( 'related_tour_section' ); ?>
+
     <!--End Blog section-->
-
-
 <?php get_footer(); ?>

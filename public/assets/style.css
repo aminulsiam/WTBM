@@ -966,10 +966,6 @@ section.wtbmt_packege_wrapper_area {
     margin: 0;
 }
 
-.wtbmt_package_image_left img {
-    height: 297px;
-}
-
 .wtbmt_package_content_right ul li {
     display: inline-block;
     padding-bottom: 10px;
@@ -995,26 +991,32 @@ section.wtbmt_packege_wrapper_area {
     font-size: 16px;
 }
 
-.wtbmt_package_image_left {
-    float: left;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
 .wtbmt_single_package {
-    position: relative;
-    padding: 0 0 0px 230px;
-    margin-bottom: 30px;
     border: 5px solid #fff;
     border-radius: 10px;
+    display: flex;
+    margin: 0 0 15px 0;
+}
+
+.wtbmt_package_image_left {
+    width: 30%;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.wtbmt_package_image_left img {
+    width: 100%;
+    height: auto;
 }
 
 .wtbmt_package_content_right {
-    padding-left: 70px;
-    padding-top: 20px;
+    padding: 15px;
     background: #fff;
-    padding-right: 30px;
+    width: 70%;
+}
+
+.wtbmt_package_content_right p, .wtbmt_package_content_right h4 {
+    margin: 0 0 15px 0;
 }
 
 .wtbmt_package_shedule li {
@@ -1024,6 +1026,10 @@ section.wtbmt_packege_wrapper_area {
 
 .wtbmt_single_package .border_top {
     border-top: 1px solid #ddd;
+}
+
+.wtbmt_package_benefits{
+    margin-top: 30px;
 }
 
 .wtbmt_package_benefits ul li {

@@ -1,11 +1,15 @@
 <?php
+
+// Cannot access pages directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	die;
-} // Cannot access pages directly.
+}
 
 /**
- * @package    Mage_Plugin
- * @subpackage Mage_Plugin/admin
+ * Tour Booking Admin Main Class [free version]
+ *
+ * @package    Woocommerce Tour Booking Manager
+ * @subpackage woocommerce-tour-booking-manager/admin
  * @author     MagePeople team <magepeopleteam@gmail.com>
  */
 class Tour_Plugin_Admin {
@@ -33,9 +37,9 @@ class Tour_Plugin_Admin {
 		add_action( 'wp_insert_post', array( $this, 'wtbm_on_post_publish' ), 10, 2 );
 		add_action( 'save_post', array( $this, 'wtbm_wc_link_product_on_save' ), 10, 1 );
 		
-		add_action( 'parse_query', array( $this, 'wtbm_product_tags_sorting_query' ) );
-		
+		//add_action( 'parse_query', array( $this, 'wtbm_product_tags_sorting_query' ) );
 	}
+	
 	
 	function wtbm_count_hidden_wc_product( $tour_id ) {
 		$args = array(
@@ -61,6 +65,7 @@ class Tour_Plugin_Admin {
 	 * @param $query
 	 */
 	function wtbm_product_tags_sorting_query( $query ) {
+		
 		global $pagenow;
 		
 		$taxonomy = 'product_visibility';
@@ -70,13 +75,14 @@ class Tour_Plugin_Admin {
 		if ( $pagenow == 'edit.php' && isset( $q_vars['post_type'] ) && $q_vars['post_type'] == 'product' ) {
 			
 			$tax_query = array(
-				[
+				array(
 					'taxonomy' => 'product_visibility',
 					'field'    => 'slug',
 					'terms'    => 'exclude-from-catalog',
 					'operator' => 'NOT IN',
-				],
+				),
 			);
+			
 			$query->set( 'tax_query', $tax_query );
 		}
 		
@@ -88,7 +94,8 @@ class Tour_Plugin_Admin {
 	 * @param $post_id
 	 * @param $title
 	 */
-	function wtbm_create_hidden_tour_product( $post_id, $title ) {
+	public function wtbm_create_hidden_tour_product( $post_id, $title ) {
+		
 		$new_post = array(
 			'post_title'    => $title,
 			'post_content'  => '',
@@ -98,7 +105,6 @@ class Tour_Plugin_Admin {
 			'post_status'   => 'publish',
 			'post_type'     => 'product',
 		);
-		
 		
 		$pid = wp_insert_post( $new_post );
 		
@@ -122,8 +128,8 @@ class Tour_Plugin_Admin {
 		
 		if ( get_post_type( $post_id ) == 'mage_tour' ) {
 			
-			if ( ! isset( $_POST['wtbm_meta_box_nonce'] ) ||
-			     ! wp_verify_nonce( $_POST['wtbm_meta_box_nonce'], 'wtbm_meta_box_nonce' ) ) {
+			if ( ! isset( $_POST['wtbm_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['wtbm_meta_box_nonce'], 'wtbm_meta_box_nonce' ) ) {
+				
 				return;
 			}
 			
@@ -172,12 +178,12 @@ class Tour_Plugin_Admin {
 			
 			// unhook this function so it doesn't loop infinitely
 			remove_action( 'save_post', array( $this, 'wtbm_wc_link_product_on_save' ) );
+			
 			// update the post, which calls save_post again
 			wp_update_post( $my_post );
+			
 			// re-hook this function
 			add_action( 'save_post', array( $this, 'wtbm_wc_link_product_on_save' ) );
-			// Update the post into the database
-			
 			
 		}
 		
@@ -193,6 +199,7 @@ class Tour_Plugin_Admin {
 	 * @return mixed
 	 */
 	function wtbm_on_post_publish( $post_id, $post ) {
+		
 		if ( $post->post_type == 'mage_tour' && $post->post_status == 'publish' && empty( get_post_meta( $post_id,
 				'check_if_run_once' ) ) ) {
 			
@@ -206,6 +213,7 @@ class Tour_Plugin_Admin {
 				'post_status'   => 'publish', // Choose: publish, preview, future, draft, etc.
 				'post_type'     => 'product'  //'post',page' or use a custom post type if you want to
 			);
+			
 			//SAVE THE POST
 			$pid = wp_insert_post( $new_post );
 			
@@ -222,6 +230,8 @@ class Tour_Plugin_Admin {
 	}//end method wtbm_on_post_publish
 	
 	/**
+	 * Trash tour booking info when woocommerce order will be trash.
+	 *
 	 * @param $post_id
 	 */
 	public function wtbm_booking_info_trash( $post_id ) {
@@ -229,11 +239,14 @@ class Tour_Plugin_Admin {
 		$post_type = get_post_type( $post_id );
 		
 		if ( $post_type == 'shop_order' ) {
-			$this->change_tour_booking_status( $post_id, 'trash', 'publish', 'trash' );
+			Tour_Booking_Helper::change_tour_booking_status( $post_id, 'trash', 'publish', 'trash' );
 		}
+		
 	}//end method wtbm_booking_info_trash
 	
 	/**
+	 * Untrash tour booking information when woocommerce order will be untrash.
+	 *
 	 * @param $post_id
 	 */
 	public function wtbm_booking_info_untrash( $post_id ) {
@@ -241,7 +254,7 @@ class Tour_Plugin_Admin {
 		$post_type = get_post_type( $post_id );
 		
 		if ( $post_type == 'shop_order' ) {
-			$this->change_tour_booking_status( $post_id, 'publish', 'trash', 'processing' );
+			Tour_Booking_Helper::change_tour_booking_status( $post_id, 'publish', 'trash', 'processing' );
 		}
 	}//end method wtbm_booking_info_untrash
 	
@@ -259,39 +272,39 @@ class Tour_Plugin_Admin {
 		
 		foreach ( $order->get_items() as $item_id => $item_values ) {
 			
-			$hotel_id = $this->wtbm_get_order_meta( $item_id, '_tour_id' );
+			$tour_id = $this->wtbm_get_order_meta( $item_id, '_tour_id' );
 			
 			//check post types
-			if ( get_post_type( $hotel_id ) == 'mage_tour' ) {
+			if ( get_post_type( $tour_id ) == 'mage_tour' ) {
 				
 				if ( $order->has_status( 'processing' ) ) {
 					
-					$this->change_tour_booking_status( $order_id, 'publish', 'publish', 'processing' );
+					Tour_Booking_Helper::change_tour_booking_status( $order_id, 'publish', 'publish', 'processing' );
 					
 				}
 				
 				if ( $order->has_status( 'pending' ) ) {
-					$this->change_tour_booking_status( $order_id, 'publish', 'publish', 'pending' );
+					Tour_Booking_Helper::change_tour_booking_status( $order_id, 'publish', 'publish', 'pending' );
 				}
 				
 				if ( $order->has_status( 'on-hold' ) ) {
-					$this->change_tour_booking_status( $order_id, 'publish', 'publish', 'on-hold' );
+					Tour_Booking_Helper::change_tour_booking_status( $order_id, 'publish', 'publish', 'on-hold' );
 				}
 				
 				if ( $order->has_status( 'completed' ) ) {
-					$this->change_tour_booking_status( $order_id, 'publish', 'publish', 'completed' );
+					Tour_Booking_Helper::change_tour_booking_status( $order_id, 'publish', 'publish', 'completed' );
 				}
 				
 				if ( $order->has_status( 'cancelled' ) ) {
-					$this->change_tour_booking_status( $order_id, 'publish', 'publish', 'cancelled' );
+					Tour_Booking_Helper::change_tour_booking_status( $order_id, 'publish', 'publish', 'cancelled' );
 				}
 				
 				if ( $order->has_status( 'refunded' ) ) {
-					$this->change_tour_booking_status( $order_id, 'publish', 'publish', 'refunded' );
+					Tour_Booking_Helper::change_tour_booking_status( $order_id, 'publish', 'publish', 'refunded' );
 				}
 				
 				if ( $order->has_status( 'failed' ) ) {
-					$this->change_tour_booking_status( $order_id, 'publish', 'publish', 'failed' );
+					Tour_Booking_Helper::change_tour_booking_status( $order_id, 'publish', 'publish', 'failed' );
 				}
 				
 			} //end of Post Type Check
@@ -300,7 +313,7 @@ class Tour_Plugin_Admin {
 	
 	
 	/**
-	 *
+	 * Change Booking status when changing the woocommerce order status.
 	 *
 	 * @param $order_id
 	 * @param $set_status
@@ -308,6 +321,7 @@ class Tour_Plugin_Admin {
 	 * @param $booking_status
 	 */
 	public function change_tour_booking_status( $order_id, $set_status, $post_status, $booking_status ) {
+		
 		$args = array(
 			'post_type'      => array( 'mage_tour_booking' ),
 			'posts_per_page' => - 1,
@@ -322,8 +336,9 @@ class Tour_Plugin_Admin {
 		);
 		
 		$loop = new WP_Query( $args );
-		foreach ( $loop->posts as $ticket ) {
-			$post_id      = $ticket->ID;
+		
+		foreach ( $loop->posts as $tour ) {
+			$post_id      = $tour->ID;
 			$current_post = get_post( $post_id, 'ARRAY_A' );
 			update_post_meta( $post_id, 'wtbm_order_status', $booking_status );
 			$current_post['post_status'] = $set_status;
@@ -353,9 +368,12 @@ class Tour_Plugin_Admin {
 		}
 		
 		return $value;
-	}
+		
+	}//end method wtbm_get_order_meta
 	
 	/**
+	 * Tour booking information create when booking a tour.
+	 *
 	 * @param $order_id
 	 */
 	public function tour_booking_data_create( $order_id ) {
@@ -506,6 +524,7 @@ class Tour_Plugin_Admin {
 	 * Enqueue all styles
 	 */
 	public function enqueue_styles() {
+		
 		wp_enqueue_style( 'mage-jquery-ui-style', PLUGIN_URL . 'admin/css/jquery-ui.css', array() );
 		
 		wp_enqueue_style( 'pickplugins-options-framework',
@@ -515,6 +534,7 @@ class Tour_Plugin_Admin {
 		wp_enqueue_style( 'codemirror', PLUGIN_URL . 'admin/assets/css/codemirror.css' );
 		wp_enqueue_style( 'fontawesome', PLUGIN_URL . 'admin/assets/css/fontawesome.min.css' );
 		wp_enqueue_style( 'mage-admin-css', PLUGIN_URL . 'admin/css/mage-plugin-admin.css', array(), time(), 'all' );
+		
 	}//end method enqueue_styles
 	
 	/**
@@ -565,7 +585,9 @@ class Tour_Plugin_Admin {
 		
 	}//end method enqueue_scripts
 	
-	
+	/**
+	 * Load all admin dependencies
+	 */
 	private function load_admin_dependencies() {
 		require_once PLUGIN_DIR . 'admin/class/class-create-cpt.php';
 		require_once PLUGIN_DIR . 'admin/class/class-create-tax.php';
@@ -573,10 +595,10 @@ class Tour_Plugin_Admin {
 		require_once PLUGIN_DIR . 'admin/class/class-tax-meta.php';
 		require_once PLUGIN_DIR . 'admin/class/class-export.php';
 		require_once PLUGIN_DIR . 'admin/class/class-setting-page.php';
-	}
+	}//end method load_admin_dependencies
 	
 	
-}
+}//end class Tour_Plugin_Admin
 
 new Tour_Plugin_Admin();
 

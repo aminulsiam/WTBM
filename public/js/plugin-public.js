@@ -112,5 +112,9 @@
             return false;
         });
 
+        $("#datepicker").datepicker({
+            dateFormat: 'dd-mm-yy'
+        });
+
     });
 }(jQuery));

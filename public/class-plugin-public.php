@@ -1,11 +1,14 @@
 <?php
+// Cannot access pages directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	die;
-} // Cannot access pages directly.
+}
 
 /**
- * @package    Mage_Plugin
- * @subpackage Mage_Plugin/public
+ * Tour Booking Main Public Class [free version]
+ *
+ * @package    woocommerce-tour-booking-manager
+ * @subpackage woocommerce-tour-booking-manager/public
  * @author     MagePeople team <magepeopleteam@gmail.com>
  */
 class Tour_Plugin_Public {
@@ -55,28 +58,44 @@ class Tour_Plugin_Public {
 		
 		wp_enqueue_style( 'tour-jquery-ui-css', PLUGIN_URL . 'public/css/jquery-ui.css', array(), time(), 'all' );
 		
-		if ( is_plugin_active( 'woocommerce-tour-booking-manager/plugin.php' ) ) {
+		$theme = wp_get_theme();
+		
+		if ( "Tour Booking Theme" != $theme->name ) {
 			
-			wp_enqueue_style( 'template-style', PLUGIN_URL . 'public/css/template-style.css', array(), time(), 'all' );
-			
-			// new template styles
-			wp_enqueue_style( 'tour-public-main-style',
-				PLUGIN_URL . 'public/assets/style.css',
+			wp_enqueue_style( 'wtbmt-bootstrap-css',
+				PLUGIN_URL . 'public/assets/css/bootstrap.min.css',
 				array(),
-				time(),
+				'',
 				'all' );
-			
-			wp_enqueue_style( 'owl-carousel',
+			wp_enqueue_style( 'wtbmt-awesome-css',
+				PLUGIN_URL . 'public/assets/css/font-awesome.min.css',
+				array(),
+				'',
+				'all' );
+			wp_enqueue_style( 'wtbmt-carousel-css',
 				PLUGIN_URL . 'public/assets/css/owl.carousel.min.css',
 				array(),
-				time(),
+				'',
+				'all' );
+			wp_enqueue_style( 'wtbmt-animate-css',
+				PLUGIN_URL . 'public/assets/css/animate.min.css',
+				array(),
+				'',
+				'all' );
+			wp_enqueue_style( 'wtbmt-aos-css', PLUGIN_URL . 'public/assets/css/aos.css', array(), '', 'all' );
+			wp_enqueue_style( 'wtbmt-slicknav-css',
+				PLUGIN_URL . 'public/assets/css/slicknav.min.css',
+				array(),
+				'',
 				'all' );
 			
-			wp_enqueue_style( 'tour-public-main-style',
-				PLUGIN_URL . 'public/assets/style.css',
+			wp_enqueue_style( 'wtbmt-responsive-css',
+				PLUGIN_URL . 'public/assets/css/responsive.css',
 				array(),
-				time(),
+				1,
 				'all' );
+			
+			wp_enqueue_style( 'wtbmt-main-css', PLUGIN_URL . 'public/assets/style.css', array(), time(), 'all' );
 			
 		}
 		
@@ -85,7 +104,7 @@ class Tour_Plugin_Public {
 	
 	
 	/**
-	 * This function is loaded scripts
+	 * Load all scripts
 	 */
 	public function enqueue_scripts() {
 		
@@ -94,7 +113,6 @@ class Tour_Plugin_Public {
 		wp_enqueue_script( 'jquery-ui-core' );
 		wp_enqueue_script( 'jquery-ui-datepicker' );
 		wp_enqueue_script( 'jquery-ui-sortable' );
-		
 		
 		wp_enqueue_script( 'tour-public-js',
 			PLUGIN_URL . 'public/js/plugin-public.js',
@@ -109,6 +127,7 @@ class Tour_Plugin_Public {
 		$localzed_value = array(
 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
 		);
+		
 		wp_localize_script( 'tour-public-js', 'woo_tour', $localzed_value );
 		
 		wp_enqueue_script( 'template-custom-js',
@@ -133,6 +152,8 @@ class Tour_Plugin_Public {
 	}//end method enqueue_scripts
 	
 	/**
+	 * Display tour [custom post] in single page
+	 *
 	 * @param $template
 	 *
 	 * @return string
@@ -157,6 +178,8 @@ class Tour_Plugin_Public {
 	}
 	
 	/**
+	 * Display tour destination template by destination taxonomy
+	 *
 	 * @param $template
 	 *
 	 * @return string
@@ -195,9 +218,7 @@ class Tour_Plugin_Public {
 		}
 		
 		?>
-        <div class="wtbmt_order_summury_box">
 
-        </div>
         <table class="table">
             <thead>
 
@@ -278,13 +299,11 @@ class Tour_Plugin_Public {
                     </tr>
 				
 				<?php }
-			} else {
-				?>
+			} else { ?>
                 <tr class="no_room">
                     <span style="color: red;font-weight: bold;text-align: center">No Room available</span>
                 </tr>
-				<?php
-			} ?>
+			<?php } ?>
 
 
             <tr>
@@ -331,7 +350,7 @@ class Tour_Plugin_Public {
             <tr>
                 <div class="cart_now_btn">
                     <button class="default-btn but_btn" disabled="disabled" name="add-to-cart"
-                            value="<?php echo $wc_product; ?>">
+                            value="<?php esc_attr_e( $wc_product ); ?>">
                         Add To Cart
                     </button>
                 </div>
@@ -364,12 +383,10 @@ class Tour_Plugin_Public {
 
         </script>
 		
-		<?php
-		
-		exit();
+		<?php exit();
 	}//end method show_hotel_by_option_selected
 	
 	
-}
+}//end class Tour_Plugin_Public
 
 new Tour_Plugin_Public();

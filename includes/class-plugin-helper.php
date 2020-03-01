@@ -18,243 +18,39 @@ if ( ! class_exists( 'Tour_Booking_Helper' ) ) {
 	class Tour_Booking_Helper {
 		
 		/**
-		 * This method is showing hotel details.
+		 * Change Booking status when changing the woocommerce order status.
 		 *
-		 * @param $get_hotel_details
+		 * @param $order_id
+		 * @param $set_status
+		 * @param $post_status
+		 * @param $booking_status
 		 */
-		public static function hotel_details( $get_hotel_details ) {
+		public static function change_tour_booking_status( $order_id, $set_status, $post_status, $booking_status ) {
 			
-			global $post;
+			$args = array(
+				'post_type'      => array( 'mage_tour_booking' ),
+				'posts_per_page' => - 1,
+				'post_status'    => $post_status,
+				'meta_query'     => array(
+					array(
+						'key'     => 'wtbm_order_id',
+						'value'   => $order_id,
+						'compare' => '=',
+					),
+				),
+			);
 			
-			$hotel_price_source = get_post_meta( $post->ID, 'tour_price_source', true );
-			$tour_start_date    = get_post_meta( $post->ID, 'start_date', true );
-			$tour_type          = get_post_meta( $post->ID, 'tour_offer_type', true );
+			$loop = new WP_Query( $args );
 			
-			?>
-
-            <div id="dialog-form" title="Buy Your Tour Pakage">
-                <form action="" method="post">
-
-                    <section class="pop-up-right">
-						
-						<?php
-						
-						if ( "flexible" == $tour_type ) {
-							?>
-                            <div class="form-group">
-                                <label for=""><?php echo esc_html__( 'Tour Date :  ',
-										'woocommerce-tour-booking-manager' ); ?></label>
-                                <input type="text" class="datepicker" autocomplete="off" name="tour_date"
-                                       placeholder="Enter your tour start date" required/>
-                                <span class="description"><?php echo esc_html__( 'Enter your tour start date', 'woocommerce-tour-booking-manager' ); ?></span>
-
-                            </div>
-							<?php
-						} elseif ( "fixed" == $tour_type ) {
-							?>
-                            <input type="hidden" value='<?php echo $tour_start_date; ?>' name="tour_date"/>
-							<?php
-						}
-						
-						if ( 'hotel' == $hotel_price_source ) {
-							?>
-
-                            <div class="hotel_options">
-
-                                <h3 class="hotel_select_heading">
-									<?php echo esc_html__( 'Select Your Hotel Please',
-										'woocommerce-tour-booking-manager' ); ?>
-                                </h3>
-
-                                <select class="hotel" name="tour_hotel" data-id="<?php echo get_the_ID(); ?>">
-                                    <option value="other"><?php echo
-										esc_html__( 'Select Your Hotel', 'woocommerce-tour-booking-manager' ) ?></option>
-									<?php
-									foreach ( $get_hotel_details as $hotel ) {
-										?>
-                                        <option value="<?php echo esc_attr( $hotel->term_id ); ?>">
-											<?php echo esc_html( ucfirst( $hotel->name ) ); ?>
-                                        </option>
-									<?php } ?>
-                                </select>
-                            </div>
-
-                            <span class="hotel_details no_hotel"></span>
-						
-						<?php } elseif ( 'tour' == $hotel_price_source ) {
-						
-						$tour_price = maybe_unserialize( get_post_meta( $post->ID, 'hotel_room_details',
-							true ) );
-						
-						$tour_duration = get_post_meta( $post->ID, 'tour_duration', true );
-						
-						if ( empty( $tour_duration ) ) {
-							$tour_duration = 1;
-						}
-						
-						if ( ! is_array( $tour_price ) ) {
-							$tour_price = array();
-						}
-						?>
-                        <input type="hidden" name="tour_hotel" value="0">
-
-                        <span class="hotel_details">
-
-                                <h3><?php echo esc_html__( 'Hotel Room Details',
-		                                'woocommerce-tour-booking-manager' ); ?></h3>
-                                <table>
-                                    <tr>
-                                        <th><?php echo esc_html__( 'Room Type',
-		                                        'woocommerce-tour-booking-manager' ) ?></th>
-                                        <th><?php echo esc_html__( 'Room Fare',
-		                                        'woocommerce-tour-booking-manager' ) ?></th>
-                                        <th><?php echo esc_html__( 'Room Quantity',
-		                                        'woocommerce-tour-booking-manager' ) ?></th>
-                                    </tr>
-	                                <?php
-	                                foreach ( $tour_price as $room ) {
-		                                ?>
-                                        <tr>
-                                            <td>
-                                                <input type="hidden" name="room_name[]"
-                                                       value="<?php esc_html_e( $room['room_type'] ); ?>">
-                                                
-   <input type="hidden" name="room_cap[]" value="<?php esc_html_e( $room['person_capacity'] ); ?>_<?php
-   echo trim( $room['room_type'] ); ?>_<?php trim( esc_html_e( $room['room_fare'] ) ); ?>">
-	
-	                                            <?php esc_html_e( $room['room_type'] ); ?>
-                                            </td>
-
-                                            <td class="price-td">
-                                                <span class="room_price" style="display: none">
-                                                    <?php esc_html_e( $room['room_fare'] *
-                                                                      $tour_duration ); ?>
-                                                </span>
-
-                                                <span>
-                                                    <?php echo '(Per Night -' . $room['room_fare'] . ' X ' . $tour_duration . ' Nights ) = ' . wc_price( $room['room_fare'] * $tour_duration ); ?>
-                                                    
-                                                    
-                                                </span>
-
-                                                <span class="person_capacity" style="display: none">
-                                                    <?php esc_html_e( $room['person_capacity'] ); ?></span>
-
-                                                <input type="hidden" value="<?php esc_html_e(
-	                                                $room['room_fare'] ); ?>" name="room_price[]"
-                                                       class="price">
-
-                                                <input type="hidden"
-                                                       value="<?php esc_html_e( $room['person_capacity'] );
-                                                       ?>" name="person_capacity" class="max_person"/>
-                                            </td>
-
-                                            <td>
-                                                <select class="qty" name="room_qty[]" required>
-                                                    <option value='0'>0</option>
-	                                                <?php
-	                                                for ( $i = 1; $i <= $room['room_qty']; $i ++ ) {
-		                                                ?>
-                                                        <option value="<?php esc_attr_e( $i ); ?>">
-                                                            <?php esc_html_e( $i ) ?>
-                                                        </option>
-	                                                <?php } ?>
-                                                </select>
-                                            </td>
-                                        </tr>
-	
-	                                <?php } ?>
-
-                                    <tr>
-                                        <td colspan="2">
-                                            <?php
-                                            echo esc_html__( 'No of Traveller',
-	                                            'woocommerce-tour-booking-manager' ); ?></td>
-
-                                        <td align="right">
-                                            <input type="number" min="0" max="0" class="total_person"
-                                                   name="total_person" value="0">
-                                            
-                                            <span class="total_person_show_error"></span>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td colspan="2">
-                                            <?php echo esc_html__( 'Total Price',
-	                                            'woocommerce-tour-booking-manager' ); ?>
-                                        </td>
-	
-	                                    <?php $currency_pos = get_option( 'woocommerce_currency_pos' ); ?>
-
-                                        <td align="right">
-                                            <?php
-                                            if ( $currency_pos == "left" ) {
-	                                            echo get_woocommerce_currency_symbol();
-                                            }
-                                            ?>
-                                            <span id="total" class="total">0</span>
-		                                    <?php
-		                                    if ( $currency_pos == "right" ) {
-			                                    echo get_woocommerce_currency_symbol();
-		                                    }
-		                                    ?>
-                                        </td>
-                                    </tr>
-
-                                    <tr class="form_builder">
-                                        <td colspan="3">
-                                            
-                                            <span class="form"></span>
-                                            
-                                            <span class="error_text" style="text-align: center">
-                                                <?php echo esc_html__( 'No Traveller Selected', '' ); ?>
-                                            </span>
-                                            
-                                            <button type="submit" class="btn btn-info
-                                            pop_up_add_to_cart_button" name="add-to-cart" disabled="disabled"
-                                                    value="<?php echo get_the_ID(); ?>">
-                                                <?php
-                                                echo esc_html__( 'Add To Cart',
-	                                                'woocommerce-tour-booking-manager' ); ?>
-                                            </button>
-                                            
-                                        </td>
-                                    </tr>
-
-                                </table>
-		                    </span>
-                    </section>
-                </form>
-            </div>
-
-            <script type="text/javascript">
-
-                jQuery('.total_person').on('change', function () {
-                    var inputs = jQuery(this).val() || 0;
-                    var input = parseInt(inputs);
-
-                    var children = jQuery('.form > div').length || 0;
-
-                    if (input < children) {
-                        jQuery('.form').empty();
-                        children = 0;
-                    }
-
-                    for (var i = children + 1; i <= input; i++) {
-                        jQuery('.form').append(
-                            jQuery('<div/>')
-                                .attr("id", "newDiv" + i)
-                                .html('<?php do_action( 'attendee_form_builder', get_the_id() ); ?>')
-                        );
-                    }
-
-                });
-
-            </script>
-			<?php
-		}
-		}//end method hotel_details
+			foreach ( $loop->posts as $tour ) {
+				$post_id      = $tour->ID;
+				$current_post = get_post( $post_id, 'ARRAY_A' );
+				update_post_meta( $post_id, 'wtbm_order_status', $booking_status );
+				$current_post['post_status'] = $set_status;
+				wp_update_post( $current_post );
+			}
+			
+		}//end method change_tour_booking_status
 		
 		/**
 		 * This method will show every tour pakage by shortcode
@@ -307,7 +103,9 @@ if ( ! class_exists( 'Tour_Booking_Helper' ) ) {
 					$tour_duration = get_post_meta( $pakage->ID, 'tour_duration', true );
 					
 					//get room fare
-					$hotel_room_fare_min = maybe_unserialize( get_post_meta( $pakage->ID, 'hotel_room_details', true ) );
+					$hotel_room_fare_min = maybe_unserialize( get_post_meta( $pakage->ID,
+						'hotel_room_details',
+						true ) );
 					
 					//check $hotel_room_fare_min is array or not
 					if ( ! is_array( $hotel_room_fare_min ) ) {
@@ -338,7 +136,8 @@ if ( ! class_exists( 'Tour_Booking_Helper' ) ) {
                                     <ul>
                                         <li><img src="<?php echo PLUGIN_URL . 'public/images/module-calender.png'; ?>"
                                                  alt="calender">
-                                            <span><?php esc_html_e( '' . $tour_duration . ' Day', 'woocommerce-tour-booking-manager' ) ?></span>
+                                            <span><?php esc_html_e( '' . $tour_duration . ' Day',
+													'woocommerce-tour-booking-manager' ) ?></span>
                                         </li>
                                         <li>
                                             <img src="<?php
@@ -351,9 +150,11 @@ if ( ! class_exists( 'Tour_Booking_Helper' ) ) {
                                     </ul>
                                 </div>
                                 <div class="bottom">
-                                    <span><?php echo esc_html__( 'Price starts from (per person)', 'woocommerce-tour-booking-manager' ); ?></span>
+                                    <span><?php echo esc_html__( 'Price starts from (per person)',
+		                                    'woocommerce-tour-booking-manager' ); ?></span>
                                     <h4>
-                                        <span><?php echo esc_html__( 'BDT ' . $min_fare . '', 'woocommerce-tour-booking-manager' ); ?></span>
+                                        <span><?php echo esc_html__( 'BDT ' . $min_fare . '',
+		                                        'woocommerce-tour-booking-manager' ); ?></span>
                                     </h4>
                                     <p><?php echo esc_html( $pakage->post_title ); ?> </p>
                                     <p>
@@ -383,57 +184,30 @@ if ( ! class_exists( 'Tour_Booking_Helper' ) ) {
 			wp_reset_postdata();
 			
 		}//end method search_and_all_tour_pakage
-  
+		
 		/**
-		 *
+         * Add pagination in tour listing page.
+         *
+		 * @param $the_query
 		 */
-        public static function form_builder_script(){
-		    ?>
-
-            <script type="text/javascript">
-
-                jQuery('.total_person').on('change', function () {
-                    var inputs = jQuery(this).val() || 0;
-                    var input = parseInt(inputs);
-                    var children = jQuery('.form > div').length || 0;
-
-                    if (input < children) {
-                        jQuery('.form').empty();
-                        children = 0;
-                    }
-
-                    for (var i = children + 1; i <= input; i++) {
-                        jQuery('.form').append(
-                            jQuery('<div/>')
-                                .attr("id", "newDiv" + i)
-                                .html('<?php do_action( 'attendee_form_builder', get_the_ID() ); ?>')
-                        );
-                    }
-
-                });
-
-            </script>
-            
-            <?php
-        }//end method form_builder_script
-        
-        
-		/**
-		 * Get settings from admin
-		 *
-		 * @param $setting_name
-		 * @param $meta_key
-		 * @param null $default
-		 *
-		 * @return null
-		 */
-		public static function wtbm_get_option( $setting_name, $meta_key, $default = null ) {
-			$get_settings = get_option( $setting_name );
-			$get_val      = $get_settings[ $meta_key ];
-			$output       = $get_val ? $get_val : $default;
+		public static function wtbm_pagination( $the_query ) {
 			
-			return $output;
-		}
+			$total_pages = $the_query->max_num_pages;
+			
+			if ( $total_pages > 1 ) {
+				
+				$current_page = max( 1, get_query_var( 'paged' ) );
+				
+				echo paginate_links( array(
+					'base'      => get_pagenum_link( 1 ) . '%_%',
+					'format'    => '/page/%#%',
+					'current'   => $current_page,
+					'total'     => $total_pages,
+					'prev_text' => __( '« prev' ),
+					'next_text' => __( 'next »' ),
+				) );
+			}
+		}//end method wtbm_pagination
 		
 		
 	}//end class Tour_Booking_Helper
